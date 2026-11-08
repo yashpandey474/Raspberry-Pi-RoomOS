@@ -1,0 +1,2 @@
+class AIEngineUnavailable(Exception):
+    pass

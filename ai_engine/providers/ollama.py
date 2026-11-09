@@ -1,5 +1,7 @@
 import httpx
 
+from shared.contracts import ChatMessage
+
 
 class OllamaProvider:
     def __init__(
@@ -13,13 +15,14 @@ class OllamaProvider:
             timeout=90.0
         )
 
-    async def chat(self, message: str) -> str:
+    async def chat(self, messages: list[ChatMessage]) -> str:
         response = await self._client.post(
             "/api/chat", # posts to ollama api running on laptop
             json={
                 "model": self.model,
                 "messages": [
-                    {"role": "user", "content": message}
+                    {"role": message.role, "content": message.content}
+                    for message in messages
                 ],
                 "stream": False
             }

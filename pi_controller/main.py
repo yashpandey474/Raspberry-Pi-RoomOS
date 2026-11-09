@@ -5,6 +5,10 @@ from pi_controller.media.contracts import Track
 from pi_controller.media.service import MediaService
 from shared.contracts import HealthResponse
 from pi_controller.api.routes.media import router as media_router
+from pi_controller.api.routes.assistant import router as assistant_router
+
+import os
+from pi_controller.clients.ai_engine import AIEngineClient
 
 
 
@@ -17,7 +21,12 @@ async def lifespan(app: FastAPI):
     ])
 
     app.state.media_service = MediaService(player)
-
+    app.state.ai_engine_client = AIEngineClient(
+        base_url=os.getenv(
+            "ROOMOS_AI_ENGINE_URL",
+            "http://127.0.0.1:8001"
+        )
+    )
     yield
 
 app = FastAPI(
@@ -37,3 +46,4 @@ async def health_check() -> HealthResponse:
     )
 
 app.include_router(media_router)
+app.include_router(assistant_router)

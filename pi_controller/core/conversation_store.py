@@ -9,8 +9,9 @@ import sqlite3
 from typing import List, Tuple
 import logging
 from pi_controller.core.constants import CREATE_INDICES_QUERY, CREATE_MESSAGES_TABLE_QUERY
-from pi_controller.core.models import ChatMessageRole, ChatMessageSchema
 from datetime import datetime, timezone
+
+from shared.contracts import ChatMessageRole, ChatMessageSchema
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 logger.addHandler(logging.StreamHandler())

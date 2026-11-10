@@ -21,7 +21,7 @@ class OllamaProvider:
             json={
                 "model": self.model,
                 "messages": [
-                    {"role": message.role, "content": message.content}
+                    message.model_dump(mode="json", include={"role", "content"})
                     for message in messages
                 ],
                 "stream": False

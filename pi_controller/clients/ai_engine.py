@@ -1,6 +1,6 @@
 import httpx
 
-from shared.contracts import ChatRequest, ChatResponse, HealthResponse
+from shared.contracts import AIEngineChatRequest, ChatResponse, HealthResponse
 from shared.exceptions import AIEngineUnavailable
 from pydantic import ValidationError
 
@@ -35,7 +35,7 @@ class AIEngineClient:
     async def close(self):
         await self._client.aclose()
 
-    async def chat(self, request: ChatRequest) -> ChatResponse:
+    async def chat(self, request: AIEngineChatRequest) -> ChatResponse:
         try:
             response = await self._client.post(
                 "/v1/chat", # posts to the api running on laptop

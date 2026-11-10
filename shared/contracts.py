@@ -11,12 +11,6 @@ class ChatMessage(BaseModel):
     role: ChatMessageRole
     content: str
 
-class ChatRequest(BaseModel):
-    """What the RPi sends to the AI engine"""
-    session_id: str
-    messages: list[ChatMessage] = Field(min_length=1)
-    timestamp: datetime = Field(default_factory=datetime.now)
-
 
 class ChatResponse(BaseModel):
     """What the AI engine responds back with"""
@@ -38,3 +32,11 @@ class ChatMessageSchema(BaseModel):
     role: ChatMessageRole
     content: str
     timestamp: str
+
+class AssistantChatRequest(BaseModel):
+    session_id: str
+    message: str = Field(min_length=1)
+
+class AIEngineChatRequest(BaseModel):
+    session_id: str
+    messages: list[ChatMessage]

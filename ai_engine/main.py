@@ -5,7 +5,7 @@ from typing import Annotated
 
 from fastapi import FastAPI, Depends, Request, HTTPException
 
-from shared.contracts import ChatRequest, ChatResponse, HealthResponse
+from shared.contracts import AIEngineChatRequest, ChatResponse, HealthResponse
 from ai_engine.providers.ollama import OllamaProvider
 
 
@@ -35,11 +35,11 @@ def get_provider(request: Request) -> OllamaProvider:
 
 @app.post("/v1/chat", response_model=ChatResponse)
 async def chat(
-    request: ChatRequest,
+    request: AIEngineChatRequest,
     provider: Annotated[OllamaProvider, Depends(get_provider)]
 ):
     try:
-        answer = await provider.chat(request.message)
+        answer = await provider.chat(request.messages)
 
         return ChatResponse(
             session_id=request.session_id,

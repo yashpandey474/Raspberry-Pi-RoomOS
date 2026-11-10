@@ -27,7 +27,10 @@ class AIEngineClient:
         except httpx.RequestError as e:
             raise AIEngineUnavailable(f"AI engine is unavailable (request error): {e}")
         except httpx.HTTPStatusError as e:
-            raise AIEngineUnavailable(f"AI engine is unavailable (HTTP error): {e}")
+            raise AIEngineUnavailable(
+                f"AI Engine returned {e.response.status_code}: "
+                f"{e.response.text}"
+            ) from e
         except Exception as e:
             raise AIEngineUnavailable(f"AI engine is unavailable (unexpected error): {e}")
 

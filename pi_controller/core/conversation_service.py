@@ -29,10 +29,11 @@ class ConversationService:
             )
             for message in messages
         ]
+
         # Prepare the request for the AI engine
         ai_request = AIEngineChatRequest(
             session_id=request.session_id,
-            messages=messages,
+            messages=request_messages,
         )
 
         # Send the request to the AI engine and get the response

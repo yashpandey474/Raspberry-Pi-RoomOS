@@ -3,9 +3,9 @@ from typing_extensions import Annotated
 
 from fastapi import APIRouter, FastAPI, Request
 
-from pi_controller.core.models import SetVolumeRequest
 from pi_controller.media.contracts import PlaybackState
 from pi_controller.media.service import MediaService
+from shared.contracts import SetVolumeRequest
 
 
 router = APIRouter(prefix="/media", tags=["Media"])

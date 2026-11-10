@@ -7,13 +7,26 @@ from fastapi import FastAPI, Depends, Request, HTTPException
 
 from shared.contracts import AIEngineChatRequest, ChatResponse, HealthResponse
 from ai_engine.providers.ollama import OllamaProvider
+from ai_engine.config import load_config
+import logging
 
+logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    config = load_config()
     provider = OllamaProvider(
-        model=os.environ["ROOMOS_OLLAMA_MODEL"]
+        model=config.ollama.model,
+        base_url=config.ollama.base_url,
+        request_timeout_seconds=config.ollama.request_timeout_seconds,
+        connect_timeout_seconds=config.ollama.connect_timeout_seconds
     )
+    logger.info(
+        "AI Engine initialized: provider=%s, model=%s",
+        config.provider,
+        config.ollama.model
+    )
+    
     app.state.ollama = provider
 
     try:

@@ -30,6 +30,10 @@ class ConversationService:
             for message in messages
         ]
 
+        print(f"Conversation history for session {request.session_id}:")
+        for msg in request_messages:
+            print(f"{msg.role}: {msg.content}")
+            
         # Prepare the request for the AI engine
         ai_request = AIEngineChatRequest(
             session_id=request.session_id,
@@ -44,7 +48,7 @@ class ConversationService:
             session_id=request.session_id,
             role=ChatMessageRole.ASSISTANT,
             content=ai_response.response,
-            timestamp=ai_response.timestamp
+            timestamp=ai_response.timestamp.isoformat()
         )
 
         return ai_response

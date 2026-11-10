@@ -1,0 +1,8 @@
+provider: ollama
+
+ollama:
+  model: qwen3.5:4b
+  base_url: http://127.0.0.1:11434
+
+  request_timeout_seconds: 90
+  connect_timeout_seconds: 3

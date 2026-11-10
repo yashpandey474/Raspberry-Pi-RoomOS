@@ -18,7 +18,7 @@ def get_conversation_service(request: Request) -> ConversationService:
 @router.post("/chat", response_model=ChatResponse)
 async def chat(
     request: AssistantChatRequest,
-    service: Annotated[AIEngineClient, Depends(get_ai_client)]
+    service: Annotated[ConversationService, Depends(get_conversation_service)]
 ):
 
     return await service.chat(request)

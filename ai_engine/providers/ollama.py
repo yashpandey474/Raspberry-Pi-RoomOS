@@ -7,12 +7,17 @@ class OllamaProvider:
     def __init__(
         self,
         model: str,
-        base_url: str = "http://127.0.0.1:11434"
+        base_url: str,
+        request_timeout_seconds: float,
+        connect_timeout_seconds: float
     ):
         self.model = model
         self._client = httpx.AsyncClient(
             base_url=base_url,
-            timeout=90.0
+            timeout=httpx.Timeout(
+                request_timeout_seconds,
+                connect=connect_timeout_seconds
+            )        
         )
 
     async def chat(self, messages: list[ChatMessage]) -> str:

@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from fastapi.concurrency import asynccontextmanager
+from pi_controller.core.conversation_service import ConversationService
+from pi_controller.core.conversation_store import ConversationStore
 from pi_controller.media.adaptors.fake import FakeMediaPlayer
 from pi_controller.media.contracts import Track
 from pi_controller.media.service import MediaService
@@ -27,7 +29,16 @@ async def lifespan(app: FastAPI):
             "http://127.0.0.1:8001"
         )
     )
-    yield
+    app.state.conversation_store = ConversationStore()
+    app.state.conversation_service = ConversationService(
+        conversation_store=app.state.conversation_store,
+        ai_engine_client=app.state.ai_engine_client
+    )
+    try:
+        yield
+    finally:
+        # close the HTTP client during shutdown to avoid resource leaks
+        await app.state.ai_engine_client.close()
 
 app = FastAPI(
     title="RoomOS Core",

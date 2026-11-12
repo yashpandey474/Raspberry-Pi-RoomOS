@@ -3,3 +3,7 @@ __pycache__/
 .env
 .DS_Store
 *.db
+models/
+*.wav
+*.json
+*.onnx

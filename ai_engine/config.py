@@ -10,6 +10,8 @@ class OllamaConfig(BaseModel):
     base_url: str
     request_timeout_seconds: float = Field(gt=0)
     connect_timeout_seconds: float = Field(gt=0)
+    context_length: int = Field(gt=0)
+    max_tokens: int = Field(gt=0)
 
 
 class AIEngineConfig(BaseModel):

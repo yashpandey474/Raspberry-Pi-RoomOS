@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.concurrency import asynccontextmanager
+from pi_controller.core.command_router import CommandRouter
 from pi_controller.core.conversation_service import ConversationService
 from pi_controller.core.conversation_store import ConversationStore
 from pi_controller.media.adaptors.fake import FakeMediaPlayer
@@ -11,7 +12,11 @@ from pi_controller.api.routes.assistant import router as assistant_router
 
 import os
 from pi_controller.clients.ai_engine import AIEngineClient
+import logging
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+logger.addHandler(logging.StreamHandler())
 
 
 @asynccontextmanager
@@ -30,9 +35,13 @@ async def lifespan(app: FastAPI):
         )
     )
     app.state.conversation_store = ConversationStore()
+    app.state.command_router = CommandRouter(
+        media_service=app.state.media_service
+    )
     app.state.conversation_service = ConversationService(
         conversation_store=app.state.conversation_store,
-        ai_engine_client=app.state.ai_engine_client
+        ai_engine_client=app.state.ai_engine_client,
+        command_router=app.state.command_router
     )
     try:
         yield

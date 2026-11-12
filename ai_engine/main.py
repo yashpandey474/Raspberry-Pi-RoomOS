@@ -2,7 +2,7 @@ import os
 import httpx
 from contextlib import asynccontextmanager
 from typing import Annotated
-
+from datetime import datetime
 from fastapi import FastAPI, Depends, Request, HTTPException
 
 from shared.contracts import AIEngineChatRequest, ChatResponse, HealthResponse
@@ -19,7 +19,9 @@ async def lifespan(app: FastAPI):
         model=config.ollama.model,
         base_url=config.ollama.base_url,
         request_timeout_seconds=config.ollama.request_timeout_seconds,
-        connect_timeout_seconds=config.ollama.connect_timeout_seconds
+        connect_timeout_seconds=config.ollama.connect_timeout_seconds,
+        context_length=config.ollama.context_length,
+        max_tokens=config.ollama.max_tokens
     )
     logger.info(
         "AI Engine initialized: provider=%s, model=%s",
@@ -52,8 +54,15 @@ async def chat(
     provider: Annotated[OllamaProvider, Depends(get_provider)]
 ):
     try:
+        start_time = datetime.utcnow().isoformat()
         answer = await provider.chat(request.messages)
-
+        time_taken = (datetime.utcnow() - datetime.fromisoformat(start_time)).total_seconds()
+        logger.info(
+            "Chat request processed: session_id=%s, time_taken=%.2f seconds",
+            request.session_id,
+            time_taken
+        )
+        
         return ChatResponse(
             session_id=request.session_id,
             response=answer

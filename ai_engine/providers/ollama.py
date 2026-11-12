@@ -9,7 +9,9 @@ class OllamaProvider:
         model: str,
         base_url: str,
         request_timeout_seconds: float,
-        connect_timeout_seconds: float
+        connect_timeout_seconds: float,
+        context_length: int,
+        max_tokens: int
     ):
         self.model = model
         self._client = httpx.AsyncClient(
@@ -19,6 +21,8 @@ class OllamaProvider:
                 connect=connect_timeout_seconds
             )        
         )
+        self.context_length = context_length
+        self.max_tokens = max_tokens
 
     async def chat(self, messages: list[ChatMessage]) -> str:
         response = await self._client.post(
@@ -29,7 +33,11 @@ class OllamaProvider:
                     message.model_dump(mode="json", include={"role", "content"})
                     for message in messages
                 ],
-                "stream": False
+                "stream": False,
+                "options": {
+                    "num_ctx": self.context_length, # allocated context
+                    "num_predict": self.max_tokens # generated tokens
+                }
             }
         )
 

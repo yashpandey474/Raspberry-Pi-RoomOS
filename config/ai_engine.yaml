@@ -1,8 +1,11 @@
 provider: ollama
 
 ollama:
-  model: qwen3.5:4b
+  model: qwen3.5:2b-q4_K_M
   base_url: http://127.0.0.1:11434
 
   request_timeout_seconds: 90
   connect_timeout_seconds: 3
+
+  context_length: 4096
+  max_tokens: 384

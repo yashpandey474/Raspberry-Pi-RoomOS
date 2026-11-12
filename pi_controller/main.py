@@ -14,10 +14,11 @@ import os
 from pi_controller.clients.ai_engine import AIEngineClient
 import logging
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-logger.addHandler(logging.StreamHandler())
+from shared.logging_config import configure_logging
 
+configure_logging()
+
+logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

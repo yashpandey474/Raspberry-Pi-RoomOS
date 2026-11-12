@@ -13,10 +13,8 @@ from datetime import datetime, timezone
 
 from shared.contracts import ChatMessageRole, ChatMessageSchema
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-logger.addHandler(logging.StreamHandler())
-
 class ConversationStore:
+    
     def __init__(self, db_path: str = "conversation_store.db"):
         self.db_path = db_path
         self._initialize_db()

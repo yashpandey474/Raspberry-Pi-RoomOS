@@ -1,0 +1,55 @@
+import sounddevice as sd
+import wave
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+class SoundDeviceAudioCapture:
+
+    def __init__(
+            self, 
+            default_recording_duration: int = 5,
+            sample_rate: int = 16000, 
+            channels: int = 1, 
+            dtype: str = "int16",
+            chunk_size: int = 4000
+        ):
+        self.default_recording_duration = default_recording_duration
+        self.sample_rate = sample_rate
+        self.channels = channels
+        self.dtype = dtype
+        self.chunk_size = chunk_size
+
+
+    def record_wav(
+        self,
+        output_path: str,
+        duration_seconds: int | None = None
+    ) -> None:
+        if not duration_seconds:
+            duration_seconds = self.default_recording_duration
+            logger.info(f"No duration specified. Using default: {duration_seconds} seconds.")
+
+        total_frames = int(self.sample_rate * duration_seconds)
+        frames_recorded = 0
+
+        with wave.open(output_path, "w") as wf:
+            wf.setnchannels(self.channels)
+            wf.setsampwidth(2) # 2 bytes for 16-bit PCM
+            wf.setframerate(self.sample_rate)
+            with sd.RawInputStream(
+                samplerate=self.sample_rate,
+                channels=self.channels,
+                dtype=self.dtype,
+            ) as stream:
+                while frames_recorded < total_frames:
+                    # Read either the full chunk_size or just the remaining frames needed
+                    frames_to_read = min(self.chunk_size, total_frames - frames_recorded)
+                    data, overflowed = stream.read(self.chunk_size)
+                    if overflowed:
+                        logger.warning("Audio buffer overflowed!")
+                    wf.writeframes(data)
+                    frames_recorded += frames_to_read
+
+        logger.info(f"Recording complete. Saved to {output_path}. Total frames recorded: {frames_recorded}")

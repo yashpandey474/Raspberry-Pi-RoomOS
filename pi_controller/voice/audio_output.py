@@ -10,10 +10,20 @@ class SoundDeviceAudioOutput:
             sample_rate = wf.getframerate()
             channels = wf.getnchannels()
             sample_width = wf.getsampwidth()
+
+            if wf.getcomptype() != "NONE":
+                raise ValueError("Compressed WAV files are not supported.")
+
+            if sample_width != 2:
+                raise ValueError("Only 16-bit PCM WAV files are supported.")
+
+            if channels not in (1, 2):
+                raise ValueError("Only mono and stereo audio are supported.")
+            
             with sd.RawOutputStream(
                 samplerate=sample_rate,
                 channels=channels,
-                dtype=f'int{sample_width * 8}',
+                dtype=f'int16',
             ) as stream:
                 data = wf.readframes(1024)
                 while data:

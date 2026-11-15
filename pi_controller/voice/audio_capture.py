@@ -12,13 +12,14 @@ class SoundDeviceAudioCapture:
             default_recording_duration: int = 5,
             sample_rate: int = 16000, 
             channels: int = 1, 
-            dtype: str = "int16",
+            sample_width: int = 2,
             chunk_size: int = 4000
         ):
         self.default_recording_duration = default_recording_duration
         self.sample_rate = sample_rate
         self.channels = channels
-        self.dtype = dtype
+        self.dtype = f'int{sample_width * 8}'
+        self.sample_width = sample_width
         self.chunk_size = chunk_size
 
 
@@ -27,16 +28,20 @@ class SoundDeviceAudioCapture:
         output_path: str,
         duration_seconds: int | None = None
     ) -> None:
-        if not duration_seconds:
+        if duration_seconds is None:
             duration_seconds = self.default_recording_duration
             logger.info(f"No duration specified. Using default: {duration_seconds} seconds.")
 
+        if duration_seconds <= 0:
+            logger.error("Duration must be a positive integer.")
+            raise ValueError("Duration must be a positive integer.")
+        
         total_frames = int(self.sample_rate * duration_seconds)
         frames_recorded = 0
 
         with wave.open(output_path, "w") as wf:
             wf.setnchannels(self.channels)
-            wf.setsampwidth(2) # 2 bytes for 16-bit PCM
+            wf.setsampwidth(self.sample_width)
             wf.setframerate(self.sample_rate)
             with sd.RawInputStream(
                 samplerate=self.sample_rate,
@@ -46,7 +51,7 @@ class SoundDeviceAudioCapture:
                 while frames_recorded < total_frames:
                     # Read either the full chunk_size or just the remaining frames needed
                     frames_to_read = min(self.chunk_size, total_frames - frames_recorded)
-                    data, overflowed = stream.read(self.chunk_size)
+                    data, overflowed = stream.read(frames_to_read)
                     if overflowed:
                         logger.warning("Audio buffer overflowed!")
                     wf.writeframes(data)

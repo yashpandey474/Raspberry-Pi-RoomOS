@@ -19,7 +19,9 @@ class VoskSTT:
     def __init__(self, model_path: str):
         SetLogLevel(-1)
         self.model_path = model_path or "models/vosk-model-small-en-us-0.15"
+        logger.info(f"Loading Vosk model from: {self.model_path}")
         self._model = Model(self.model_path)
+        logger.info("Vosk model loaded successfully.")
 
     def transcribe_wav(self, audio_path: str) -> str:
         # open the wave file

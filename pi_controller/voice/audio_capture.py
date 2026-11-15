@@ -43,15 +43,25 @@ class SoundDeviceAudioCapture:
             wf.setnchannels(self.channels)
             wf.setsampwidth(self.sample_width)
             wf.setframerate(self.sample_rate)
+            logger.info(f"Recording audio for {duration_seconds} seconds at {self.sample_rate} Hz, {self.channels} channel(s), {self.sample_width * 8}-bit PCM.")
             with sd.RawInputStream(
                 samplerate=self.sample_rate,
                 channels=self.channels,
                 dtype=self.dtype,
+                blocksize=self.chunk_size,
             ) as stream:
+                logger.info("Microphone stream opened.")
                 while frames_recorded < total_frames:
+                    logger.debug("Reading audio frames...")
                     # Read either the full chunk_size or just the remaining frames needed
-                    frames_to_read = min(self.chunk_size, total_frames - frames_recorded)
-                    data, overflowed = stream.read(frames_to_read)
+                    frames_to_read = min(
+                        self.chunk_size, 
+                        total_frames - frames_recorded
+                    )
+                    data, overflowed = stream.read(
+                        frames_to_read
+                    )
+                    logger.debug("Read %d frames.", frames_to_read)
                     if overflowed:
                         logger.warning("Audio buffer overflowed!")
                     wf.writeframes(data)

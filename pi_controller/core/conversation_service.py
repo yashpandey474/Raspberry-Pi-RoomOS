@@ -62,7 +62,11 @@ class ConversationService:
         )
 
         # Send the request to the AI engine and get the response
-        ai_response = await self.ai_engine_client.chat(ai_request)
+        try:
+            ai_response = await self.ai_engine_client.chat(ai_request)
+        except Exception as e:
+            logger.error(f"Error in generating response from LLM: {e}")
+            raise e
 
         # Save the AI's response to the conversation store
         self.conversation_store.add_message(

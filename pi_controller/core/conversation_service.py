@@ -33,10 +33,18 @@ class ConversationService:
             logger.info(f"Command router response: {handler_response}")
             if handler_response is not None:
                 # If the command router handled the message, return a response indicating that
-                return ChatResponse(
+                response = ChatResponse(
                     session_id=request.session_id,
                     response=handler_response,
                 )
+
+                self.conversation_store.add_message(
+                    session_id=request.session_id,
+                    role=ChatMessageRole.ASSISTANT,
+                    content=response.response,
+                    timestamp=response.timestamp.isoformat(),
+                )
+                return response
         else:
             logger.info("Command router is not initialized. Skipping command handling.")
 
@@ -67,6 +75,10 @@ class ConversationService:
         except Exception as e:
             logger.error(f"Error in generating response from LLM: {e}")
             raise e
+
+        if not ai_response.response or not ai_response.response.strip():
+            logger.error("AI Engine returned an empty response.")
+            raise RuntimeError("AI Engine returned an empty response.")
 
         # Save the AI's response to the conversation store
         self.conversation_store.add_message(

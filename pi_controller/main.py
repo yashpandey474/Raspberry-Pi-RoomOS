@@ -1,14 +1,20 @@
 from fastapi import FastAPI
-from fastapi.concurrency import asynccontextmanager
+from contextlib import asynccontextmanager
 from pi_controller.core.command_router import CommandRouter
 from pi_controller.core.conversation_service import ConversationService
 from pi_controller.core.conversation_store import ConversationStore
 from pi_controller.media.adaptors.fake import FakeMediaPlayer
 from pi_controller.media.contracts import Track
 from pi_controller.media.service import MediaService
+from pi_controller.voice.assistant import VoiceAssistant
+from pi_controller.voice.audio_capture import SoundDeviceAudioCapture
+from pi_controller.voice.audio_output import SoundDeviceAudioOutput
+from pi_controller.voice.stt import VoskSTT
+from pi_controller.voice.tts import PiperTTS
 from shared.contracts import HealthResponse
 from pi_controller.api.routes.media import router as media_router
 from pi_controller.api.routes.assistant import router as assistant_router
+from pi_controller.api.routes.voice import router as voice_router
 
 import os
 from pi_controller.clients.ai_engine import AIEngineClient
@@ -44,6 +50,13 @@ async def lifespan(app: FastAPI):
         ai_engine_client=app.state.ai_engine_client,
         command_router=app.state.command_router
     )
+    app.state.voice_assistant = VoiceAssistant(
+        conversation_service=app.state.conversation_service,
+        audio_capture=SoundDeviceAudioCapture(),
+        stt=VoskSTT(model_path="models/stt/vosk-model-small-en-us-0.15"),
+        audio_output=SoundDeviceAudioOutput(),
+        tts=PiperTTS(model_path="models/tts/en_US-lessac-medium")
+    )
     try:
         yield
     finally:
@@ -68,3 +81,4 @@ async def health_check() -> HealthResponse:
 
 app.include_router(media_router)
 app.include_router(assistant_router)
+app.include_router(voice_router)

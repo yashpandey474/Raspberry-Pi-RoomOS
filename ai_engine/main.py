@@ -55,7 +55,7 @@ async def chat(
 ):
     try:
         start_time = datetime.utcnow().isoformat()
-        answer = await provider.chat(request.messages)
+        answer = await provider.chat(request)
         time_taken = (datetime.utcnow() - datetime.fromisoformat(start_time)).total_seconds()
         logger.info(
             "Chat request processed: session_id=%s, time_taken=%.2f seconds",

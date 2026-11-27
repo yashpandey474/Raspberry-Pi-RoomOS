@@ -1,0 +1,14 @@
+location:
+  latitude: null
+  longitude: null
+  timezone: "Asia/Kolkata"
+
+cache:
+  ttl_seconds: 1800
+  stale_if_error_seconds: 21600
+
+limits:
+  max_requests_per_day: 100
+
+storage:
+  database_path: "data/weather.sqlite3"

@@ -7,3 +7,6 @@ models/
 *.wav
 *.json
 *.onnx
+data/*.sqlite3
+data/*.sqlite3-shm
+data/*.sqlite3-wal

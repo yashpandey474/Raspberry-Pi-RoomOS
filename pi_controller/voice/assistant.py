@@ -10,6 +10,7 @@ import tempfile
 from pathlib import Path
 
 from shared.contracts import AssistantChatRequest, ChatResponse
+from pi_controller.voice.speech_formatter import SpeechTextFormatter
 
 
 logger = logging.getLogger(__name__)
@@ -27,8 +28,11 @@ class VoiceAssistant:
         self.audio_output = audio_output
         self.tts = tts
         self.conversation_service = conversation_service
+        self.speech_formatter = SpeechTextFormatter()
         # Prevent simultaneous voice interactions
         self._run_lock = asyncio.Lock()
+
+    
 
     async def run_once(self, session_id: str) -> None:
         async with self._run_lock:
@@ -77,12 +81,19 @@ class VoiceAssistant:
                         logger.error("AI Engine returned an empty response for session %s", session_id)
                         return
 
-
                     # 3. Generate a spoken response
+                    speech_text = self.speech_formatter.format(
+                        chat_response.response
+                    )
+
+                    if not speech_text:
+                        logger.warning("No speakable text in assistant response.")
+                        return
+
                     await asyncio.to_thread(
                         self.tts.synthesize,
-                        response_text, 
-                        response_path
+                        speech_text,
+                        response_path,
                     )
                     
                     logger.info(f"Response generated and saved to {response_path}")

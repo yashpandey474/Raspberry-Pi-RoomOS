@@ -14,6 +14,7 @@ def register_builtin_tools(registry):
         UnitConverterTool(),
         timer_tool,
         SystemHealthTool(),
+        
     ]
 
     for tool in tools:

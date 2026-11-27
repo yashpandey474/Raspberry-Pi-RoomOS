@@ -15,6 +15,8 @@ from shared.contracts import HealthResponse
 from pi_controller.api.routes.media import router as media_router
 from pi_controller.api.routes.assistant import router as assistant_router
 from pi_controller.api.routes.voice import router as voice_router
+from pi_controller.tools.registry import ToolRegistry
+from pi_controller.tools.builtin import register_builtin_tools
 
 import os
 from pi_controller.clients.ai_engine import AIEngineClient
@@ -45,10 +47,17 @@ async def lifespan(app: FastAPI):
     app.state.command_router = CommandRouter(
         media_service=app.state.media_service
     )
+
+    tool_registry = ToolRegistry()
+    timer_tool = register_builtin_tools(tool_registry)
+
+    app.state.tool_registry = tool_registry
+    app.state.timer_tool = timer_tool
     app.state.conversation_service = ConversationService(
         conversation_store=app.state.conversation_store,
         ai_engine_client=app.state.ai_engine_client,
-        command_router=app.state.command_router
+        command_router=app.state.command_router,
+        tool_registry=app.state.tool_registry
     )
     app.state.voice_assistant = VoiceAssistant(
         conversation_service=app.state.conversation_service,
@@ -60,6 +69,9 @@ async def lifespan(app: FastAPI):
     try:
         yield
     finally:
+        # close any remaining timer processes
+        await app.state.timer_tool.close()
+
         # close the HTTP client during shutdown to avoid resource leaks
         await app.state.ai_engine_client.close()
 

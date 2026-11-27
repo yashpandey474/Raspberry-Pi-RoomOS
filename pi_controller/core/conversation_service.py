@@ -21,12 +21,12 @@ class ConversationService:
         self.conversation_store = conversation_store
         self.ai_engine_client = ai_engine_client
         self.command_router = command_router
-        self.tool_Registry = tool_registry
+        self.tool_registry = tool_registry
 
     async def _call_llm(
-            self, 
-            messages: list[ChatMessage], 
-            request: AssistantChatRequest
+        self, 
+        messages: list[ChatMessage], 
+        request: AssistantChatRequest
     ) -> ChatResponse:
         # Description of all tools
         tools = self.tool_registry.describe_tools()
@@ -45,8 +45,9 @@ class ConversationService:
 
             # No tool calls requested by the model
             if not ai_response.tool_calls:
-                logger.info(f"LLM requested no tool calls")
                 response_text = (ai_response.response or "").strip()
+                logger.info(f"LLM requested no tool calls. Response: {response_text}")
+
                 
                 if not response_text:
                     raise RuntimeError("AI Engine returned an empty response.")
@@ -94,7 +95,7 @@ class ConversationService:
                             name,
                             arguments,
                         )
-                        logger.info(f"Successfully executed tool call: {name}. Total: {total_tool_calls}")
+                        logger.info(f"Successfully executed tool call: {name}. Total: {total_tool_calls}. Result: {result}")
                     except Exception as exc:
                         logger.exception("Tool execution failed: %s", name)
                         result = {
@@ -139,7 +140,10 @@ class ConversationService:
             logger.info("Command router is not initialized. Skipping command handling.")
 
         # Get the conversation history for the session
-        messages: List[ChatMessageSchema] = self.conversation_store.get_messages(session_id=request.session_id, limit=20)
+        messages: List[ChatMessageSchema] = self.conversation_store.get_messages(
+            session_id=request.session_id,
+            limit=20
+        )
 
         request_messages = [
             ChatMessage(
@@ -151,7 +155,10 @@ class ConversationService:
 
         # Send the request to the AI engine and get the response
         try:
-            ai_response = await self.ai_engine_client.chat(ai_request)
+            ai_response = await self._call_llm(
+                messages=request_messages, 
+                request=request
+            )
         except Exception as e:
             logger.error(f"Error in generating response from LLM: {e}")
             raise e

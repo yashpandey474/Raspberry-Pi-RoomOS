@@ -63,10 +63,7 @@ async def chat(
             time_taken
         )
         
-        return ChatResponse(
-            session_id=request.session_id,
-            response=answer
-        )
+        return answer
 
     except httpx.HTTPError as exc:
         raise HTTPException(

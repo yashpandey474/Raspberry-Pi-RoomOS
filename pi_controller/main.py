@@ -61,10 +61,16 @@ async def lifespan(app: FastAPI):
     )
     app.state.voice_assistant = VoiceAssistant(
         conversation_service=app.state.conversation_service,
-        audio_capture=SoundDeviceAudioCapture(),
-        stt=VoskSTT(model_path="models/stt/vosk-model-small-en-us-0.15"),
+        audio_capture=SoundDeviceAudioCapture(
+            input_device_name="MacBook Air Microphone"
+        ),
+        stt=VoskSTT(
+            model_path="models/stt/vosk-model-small-en-us-0.15"
+        ),
         audio_output=SoundDeviceAudioOutput(),
-        tts=PiperTTS(model_path="models/tts/en_US-lessac-medium")
+        tts=PiperTTS(
+            model_path="models/tts/en_US-lessac-medium"
+        )
     )
     try:
         yield

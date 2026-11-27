@@ -13,7 +13,8 @@ class SoundDeviceAudioCapture:
             sample_rate: int = 16000, 
             channels: int = 1, 
             sample_width: int = 2,
-            chunk_size: int = 4000
+            chunk_size: int = 4000,
+            input_device_name: str | None = None
         ):
         self.default_recording_duration = default_recording_duration
         self.sample_rate = sample_rate
@@ -21,7 +22,22 @@ class SoundDeviceAudioCapture:
         self.dtype = f'int{sample_width * 8}'
         self.sample_width = sample_width
         self.chunk_size = chunk_size
+        self.input_device_name = input_device_name
 
+    def _resolve_input_device(self):
+        if self.input_device_name is None:
+            return None  # Use OS default input
+
+        for index, device in enumerate(sd.query_devices()):
+            if (
+                self.input_device_name.casefold() in device["name"].casefold()
+                and device["max_input_channels"] >= self.channels
+            ):
+                return index
+
+        raise RuntimeError(
+            f"Input device not found: {self.input_device_name}"
+        )
 
     def record_wav(
         self,
@@ -49,6 +65,7 @@ class SoundDeviceAudioCapture:
                 channels=self.channels,
                 dtype=self.dtype,
                 blocksize=self.chunk_size,
+                device=self._resolve_input_device(),
             ) as stream:
                 logger.info("Microphone stream opened.")
                 while frames_recorded < total_frames:
